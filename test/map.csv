@@ -1,0 +1,31 @@
+image path,rezult,comment
+img/0.jpg,1,most simple test
+img/1.jpg,0,most simple test
+img/2.jpg,1,precision test
+img/3.jpg,0,precision test
+img/4.jpg,1,two convex objects
+img/5.jpg,0,two convex objects
+img/6.jpg,1,convex and non-convex objects can be plased only with usage of recess of non convex
+img/7.jpg,1,polygon drowen by hand can be scanned and handled correctly
+img/8.jpg,1,two non-convex objects can be plased only with usage of recesses both of non convex
+img/9.jpg,0,two non-convex objects
+img/10.jpg,1,stress test with a lot of objects and wery carefully placement
+img/11.jpg,0,stress test with a lot of objects
+img/12.jpg,1,zero objects
+img/13.jpg,0,incorrect polygon (there is no polygon)
+img/14.jpg,0,incorrect polygon (there is point)
+img/15.jpg,0,incorrect polygon (not closed poygon)
+img/16.jpg,0,incorrect polygon (non convex polygon)
+img/17.jpg,0,
+img/18.jpg,1,
+img/19.jpg,0,
+img/20.jpg,1,
+img/21.jpg,0,
+img/22.jpg,1,
+img/23.jpg,0,
+img/24.jpg,1,
+img/25.jpg,0,
+img/26.jpg,1,
+img/27.jpg,0,
+img/28.jpg,1,
+img/29.jpg,0,
