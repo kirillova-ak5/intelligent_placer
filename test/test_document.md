@@ -11,7 +11,7 @@ Answer: false
 
 
 ### Precision test
-There are two two similar polygons(triangles) and their size is is close to the corner case of bounding triangle of object.
+There are two similar polygons(triangles) and their size is is close to the corner case of bounding triangle of object.
 ![test 2](/test/img/2.jpg "test 2")
 Answer: true
 
