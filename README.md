@@ -41,7 +41,7 @@ Now this is just educational task, so programm can receive only photos of object
 - objects and polygon must be entirely contained in a photo
     - at least 4 pixels on boards of photo must contain only pixels of surface, no objects or polygon pixels
 - objects must be placed outside of the polygon
-- polygon must be black (or dark)
+- polygon must have black (or dark) borders and transparent interior (common case is drowen on paper with marker)
 
 ### Photometric
 - photo must be in *\*.jpg* format
