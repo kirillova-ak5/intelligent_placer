@@ -57,3 +57,104 @@ Chosen set of items and white surface can be viewed [here](https://github.com/ki
 
 ## Training dataset
 Training dataset with correct answers, comments and corner cases can be viewed [here](https://github.com/kirillova-ak5/intelligent_placer/blob/develop/test/test_document.md)
+
+
+## Development plan
+
+This plan is created accordong to some principles
+- we believe that we build algorithm, which can find solution for more generalized problem
+  it means: program can work with another set of items with minimal changes(no changes in souce code, only additional training or changes in some external files)
+  how treat this: we wont using any item specific information in algorithm
+- we work with only 2d progections of real-world
+  it means: we get all input information from one picture, so we dont need to take care about real-world sizes in santimeters or etc.
+  how treat this: all computation will be in relative sizes or pixel sizes
+
+
+### Algorithm
+With current results
+
+0. Convert image to low-res (256 pixels at y axis, x size saves aspect ratio)
+
+![input](/pics/2.jpg "input image")
+1. Binarize image
+
+  1.1 Canny
+
+  1.2 binary_closing from skimage
+
+  1.3 binary_fill_holes from skimage
+
+![binarise](/pics/binarisation.png "binarisation")
+
+2. Detect objects and polygon
+
+  2.1 cv.findContours on binarized image
+
+  2.2 Filter and classify finded contours
+
+    2.2.1 Delete contours, which inner area is lower then constant
+
+    2.2.2 Delete nested contours
+
+    2.2.3 Contour with max inner area threats as polygon
+
+    2.2.4 Remaining contours is objects
+
+3. Find minimal bounding rectangle(OBB) of objects and polygon
+
+![contours_and_obb](/pics/contours_and_obb.png "contours and obb")
+
+4. Create set of OBB sized objects' textures, which contains correspondong parts of binarized image
+
+5. Create polygon texture like objects' textures, but invert binarisation
+
+*With this we can just transform(rotate or translate) object texture and add it to polygon texture*
+
+*If we have value >1 in some pixel, here object collides with exterior of polygon*
+
+*Each next object we also can transform and add to image from prev iteration*
+
+*If we have value >1 in some pixel, here object collides with exterior of polygon or previously placed objects*
+
+6. Placement
+
+  6.1 Try to place object on image
+
+    6.1.1 Itarate for all possible transforms(translation x, y with 2px step, rotation angle with 2 deg step)
+
+      6.1.1.1 Add tramsformed object on image, got a new image
+
+      6.1.1.2 Compute error as num of pixels, where value greater then one.
+
+      6.1.1.3 If error is greater than 0.02% of pixels amount, continue iterating
+
+      6.1.1.4 Else and if it was last object - we placed successfully
+
+      6.1.1.5 Else try to place next object on new image
+
+      6.1.1.6 If next object placed successfully - we placed successfully
+
+      6.1.1.7 Else continue iterating
+
+    6.1.2 If we try all transforms - we cant place
+
+7. Output result
+
+![placement](/pics/placement.png "placement")
+
+
+### Future works:
+
+Now the algorithm is brute force and works terribly long, so firstly we need to improve performance
+#### Ideas:
+- Improve time limit in problem statement if it possible
+- Adaptive iterations (start with a big step, where the error is minimal search with less step)
+- Modificate error function and error and error limit
+- Reorder objects by area or OBB max edges(larger and longer object is more difficult to place)
+
+#### Another improvments:
+- Infractructure to run all tests and view rezults
+- Noise filtering on binarisation results
+- Change polygon detecton (maw area is not the best way to find out, what region is polygon)
+  - use Hough transform to check that border is set of straight lines
+  - inner color of region is close to white plane color
