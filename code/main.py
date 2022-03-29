@@ -3,6 +3,7 @@
 # Press Ctrl+F5 to execute it or replace it with your code.
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
 
+# plan
 # detect objs on imag
 #     binarize imag(ui)
 #     findConturs on mask (1obj = 1 contur)
@@ -106,6 +107,47 @@ def binarize(image):
 
     return cv2_image_from_imageio(my_edge_segmentation)
 
+
+def check_place(placement: np.ndarray):
+    err_cnt = 0
+    for el in placement.flat:
+        if el > 255:
+            err_cnt += 1
+            if err_cnt > placement.shape[0] * placement.shape[1] / 5000:
+                return False
+    return True
+
+
+def try_place(destination: np.ndarray, objects, idx):
+    trans = [0, 0]
+    object = objects[idx]
+    rows, cols = object.shape
+
+    print("new try")
+
+    for angle in range(180):
+        print(angle)
+        for half_trans_y in range(destination.shape[0] // 2):
+            for half_trans_x in range(destination.shape[1] // 2):
+                trans_y = 2 * half_trans_y
+                trans_x = 2 * half_trans_x
+                M = cv.getRotationMatrix2D(((cols - 1) / 2.0, (rows - 1) / 2.0), angle * 2, 1)
+                rotated_object = cv.warpAffine(object, M, (cols, rows))
+                copy = np.ones(shape = (destination.shape[0] + 2 * object.shape[0], destination.shape[1] + 2 * object.shape[1])) * 255
+                copy[object.shape[0]:object.shape[0] + destination.shape[0], object.shape[1]:object.shape[1] + destination.shape[1]] = destination
+                copy[trans_y + object.shape[0]:trans_y + 2 * object.shape[0],
+                trans_x + rotated_object.shape[1]:trans_x + 2 * rotated_object.shape[1]] \
+                    += rotated_object
+                if check_place(copy):
+                    if idx == len(objects) - 1:
+                        return copy
+                    else:
+                        rez = try_place(copy, objects, idx + 1)
+                        if rez is not None:
+                            return rez
+    return None
+
+
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     #load objects
@@ -114,7 +156,10 @@ if __name__ == '__main__':
     #find objects
     ref_bin_objects = [binarize(t) for t in ref_objects]
 
-    img = ref_bin_objects[3]
+    image = imageio.imread("../item_set/low/" + "2.jpg")
+    img = binarize(image)
+    cv.imshow('binarisation', img)
+
 
     #    for img in ref_bin_objects:
 #        plt.imshow(img)
@@ -132,7 +177,7 @@ if __name__ == '__main__':
     max_area = cv.contourArea(contours[0])
     for i in range(len(contours)):
         ariea = cv.contourArea(contours[i])
-        if hierarchy[0][i][3] != -1 or ariea <= 80:
+        if hierarchy[0][i][3] != -1 or ariea <= 200:
             continue
         if ariea > max_area:
             max_area, max_area_idx = ariea, len(rects)
@@ -144,7 +189,7 @@ if __name__ == '__main__':
         box = cv.boxPoints(rects[-1])
         box = np.int0(box)
         cv.drawContours(drawing, [box], 0, (0, 0, 255), 2)
-    del rects[max_area_idx]
+
     # Show in a window
     #rect[i] = ((rect[i][0][0], rect[i][0][1]), )
     cv.imshow('Contours', drawing)
@@ -155,8 +200,20 @@ if __name__ == '__main__':
         rotated_cnt = contours_filtered[len(textures) - 1]
         rotated_cnt = rotate_contour(rotated_cnt, -rec[2], rec[0], rec[1])
         cv.fillPoly(textures[-1], pts=[rotated_cnt], color=(255, 255, 255))
-    
-    cv.imshow("BlyaTex", textures[3])
+
+    polygon = textures.pop(max_area_idx)
+    polygon = (255 - polygon)
+    cv.imshow("poly", polygon)
+
+    placement = polygon
+    i = 0
+    placement = try_place(placement, textures, 0)
+#    cv.imshow("placement {idx}".format(idx=i), placement)
+    if placement is None:
+        print("cannot")
+
+    if placement is not None:
+        cv.imshow("placement", placement)
     cv.waitKey()
 
 
